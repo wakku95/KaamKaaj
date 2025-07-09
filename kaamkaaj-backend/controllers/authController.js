@@ -36,7 +36,7 @@ export const verifyEmailOtp = async (req, res) => {
 };
 
 export const registerUser = async (req, res) => {
-	const { name, email, password, isWorker } = req.body;
+	const { name, email, password, phone, isWorker } = req.body;
 
 	const userExists = await User.findOne({ email });
 	if (userExists)
@@ -48,6 +48,7 @@ export const registerUser = async (req, res) => {
 		name,
 		email,
 		password: hashedPassword,
+		phone,
 		isWorker,
 	});
 
@@ -56,6 +57,7 @@ export const registerUser = async (req, res) => {
 			_id: user._id,
 			name: user.name,
 			email: user.email,
+			phone: user.phone,
 			isWorker: user.isWorker,
 			token: generateToken(user._id),
 		});

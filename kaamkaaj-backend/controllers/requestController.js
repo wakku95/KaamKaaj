@@ -1,11 +1,18 @@
 import JobRequest from "../models/JobRequest.js";
 import User from "../models/User.js";
+import { sendStatusEmail } from "../utils/emailService.js";
 
 export const sendJobRequest = async (req, res) => {
 	const { workerId } = req.params;
 	const { message } = req.body;
 
 	try {
+		if (!req.user.isEmailVerified) {
+			return res
+				.status(403)
+				.json({ message: "Please verify your email first." });
+		}
+
 		// prevent self-contact
 		if (workerId === req.user._id.toString()) {
 			return res
@@ -76,5 +83,55 @@ export const getWorkerRequests = async (req, res) => {
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({ message: "Failed to fetch requests." });
+	}
+};
+
+export const updateRequestStatus = async (req, res) => {
+	const { id } = req.params;
+	const { status } = req.body;
+
+	// Validate status
+	if (!["accepted", "rejected"].includes(status)) {
+		return res
+			.status(400)
+			.json({ message: "Invalid status. Must be 'accepted' or 'rejected'." });
+	}
+
+	try {
+		const request = await JobRequest.findById(id);
+		if (request.status !== "pending") {
+			return res.status(400).json({
+				message: `You cannot change status once it is already ${request.status}.`,
+			});
+		}
+		if (!request) {
+			return res.status(404).json({ message: "Request not found." });
+		}
+
+		// Ensure only the assigned worker can update it
+		if (request.worker.toString() !== req.user._id.toString()) {
+			return res
+				.status(403)
+				.json({ message: "Not authorized to update this request." });
+		}
+
+		request.status = status;
+		await request.save();
+		// ✅ Notify user via email
+		const user = await User.findById(request.user).select("name email phone");
+		let extraInfo = {};
+		if (status === "accepted") {
+			extraInfo.contactInfo = {
+				name: user.name,
+				email: user.email,
+				phone: user.phone, // ✅ Include phone after acceptance
+			};
+		}
+
+		await sendStatusEmail(user.email, status);
+		res.json({ message: `Request ${status}`, request, ...extraInfo });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ message: "Failed to update request status." });
 	}
 };
