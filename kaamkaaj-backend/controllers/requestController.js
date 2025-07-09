@@ -47,14 +47,34 @@ export const sendJobRequest = async (req, res) => {
 };
 
 export const getUserRequests = async (req, res) => {
-    try {
-      const requests = await JobRequest.find({ user: req.user._id })
-        .populate("worker", "name email") // populate worker info
-        .sort({ createdAt: -1 }); // newest first
-  
-      res.json(requests);
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Failed to fetch your requests" });
-    }
-  };
+	try {
+		const requests = await JobRequest.find({ user: req.user._id })
+			.populate("worker", "name email") // populate worker info
+			.sort({ createdAt: -1 }); // newest first
+
+		res.json(requests);
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ message: "Failed to fetch your requests" });
+	}
+};
+
+export const getWorkerRequests = async (req, res) => {
+	try {
+		// Ensure only workers can access this
+		if (!req.user.isWorker) {
+			return res
+				.status(403)
+				.json({ message: "Only workers can view incoming requests." });
+		}
+
+		const requests = await JobRequest.find({ worker: req.user._id })
+			.populate("user", "name email") // populate user info (who sent the request)
+			.sort({ createdAt: -1 }); // newest first
+
+		res.json(requests);
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ message: "Failed to fetch requests." });
+	}
+};

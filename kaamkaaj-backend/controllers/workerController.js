@@ -5,7 +5,9 @@ export const createOrUpdateWorkerProfile = async (req, res) => {
 
 	try {
 		const existing = await WorkerProfile.findOne({ user: req.user._id });
-
+		if (!req.user.isEmailVerified) {
+			return res.json({ message: "Email is not verified" });
+		}
 		if (existing) {
 			// Update existing profile
 			existing.skills = skills;
