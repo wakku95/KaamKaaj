@@ -31,3 +31,7 @@ kaamkaajfrontend/build/
 # === Test/Coverage ===
 coverage/
 *.lcov
+
+
+scripts/
+  createAdmin.js

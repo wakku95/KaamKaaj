@@ -88,3 +88,49 @@ export const loginUser = async (req, res) => {
 		token: generateToken(user._id),
 	});
 };
+
+// 🔐 1. Send OTP for Forgot Password
+export const sendForgotPasswordOtp = async (req, res) => {
+	const { email } = req.body;
+
+	try {
+		const user = await User.findOne({ email });
+		if (!user) return res.status(404).json({ message: "User not found" });
+
+		const otp = Math.floor(100000 + Math.random() * 900000).toString();
+		user.otpCode = otp;
+		user.otpExpires = Date.now() + 5 * 60 * 1000; // 5 minutes
+		await user.save();
+
+		await sendEmailOtp(user.email, otp);
+
+		res.json({ message: "OTP sent to your email." });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ message: "Failed to send OTP" });
+	}
+};
+
+// 🔐 2. Reset Password with OTP
+export const resetPasswordWithOtp = async (req, res) => {
+	const { email, otp, newPassword } = req.body;
+
+	try {
+		const user = await User.findOne({ email });
+
+		if (!user || user.otpCode !== otp || user.otpExpires < Date.now()) {
+			return res.status(400).json({ message: "Invalid or expired OTP" });
+		}
+
+		const hashed = await bcrypt.hash(newPassword, 10);
+		user.password = hashed;
+		user.otpCode = null;
+		user.otpExpires = null;
+		await user.save();
+
+		res.json({ message: "Password reset successful" });
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ message: "Password reset failed" });
+	}
+};

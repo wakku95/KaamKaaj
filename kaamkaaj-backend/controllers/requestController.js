@@ -39,6 +39,16 @@ export const sendJobRequest = async (req, res) => {
 				.json({ message: "You already sent a request to this worker." });
 		}
 
+		// 5️⃣ Get worker profile and update credits
+		const workerProfile = await WorkerProfile.findOne({ user: workerId });
+		if (workerProfile) {
+			if (workerProfile.credits > 0) {
+				workerProfile.credits -= 1;
+				await workerProfile.save();
+			}
+			// ✅ You still allow request even if credits = 0
+		}
+
 		// create new request
 		const request = await JobRequest.create({
 			user: req.user._id,
