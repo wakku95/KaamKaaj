@@ -1,20 +1,47 @@
 // src/router.jsx
 import { createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import Home from "./pages/Home";
 import AdminLayout from "./admin/AdminLayout";
 import AdminLogin from "./admin/AdminLogin";
 import UsersPage from "./admin/UsersPage";
 import WorkersPage from "./admin/WorkersPage";
 import RequestsPage from "./admin/RequestsPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
+import Home from "./pages/Home";
+import Search from "./pages/Search";
+import Requests from "./pages/Requests";
+import Profile from "./pages/Profile";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import ProtectedRoute from "./routes/ProtectedRoute";
 
 // Create routes
 const router = createBrowserRouter([
 	{
-		path: "*",
+		path: "/",
 		element: <App />,
 		children: [
 			{ index: true, element: <Home /> },
+			{ path: "verify-email", element: <VerifyEmailPage /> },
+			{ path: "search", element: <Search /> },
+			{
+				path: "requests",
+				element: (
+					<ProtectedRoute>
+						<Requests />
+					</ProtectedRoute>
+				),
+			},
+			{
+				path: "profile",
+				element: (
+					<ProtectedRoute>
+						<Profile />
+					</ProtectedRoute>
+				),
+			},
+			{ path: "login", element: <LoginPage /> },
+			{ path: "register", element: <RegisterPage /> },
 			// Add other public/user routes here
 		],
 	},

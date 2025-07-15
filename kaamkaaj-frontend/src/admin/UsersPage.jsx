@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import AdminCard from "./AdminCard";
 
 export default function UsersPage() {
 	const [users, setUsers] = useState([]);
@@ -20,9 +21,7 @@ export default function UsersPage() {
 			<div className="bg-slate-800 rounded shadow p-4">
 				{users ? (
 					users.map((u) => (
-						<div key={u._id} className="border-b py-2">
-							{u.name} — {u.email}
-						</div>
+						<AdminCard key={u._id} title={u.name} value={u.email}></AdminCard>
 					))
 				) : (
 					<h1>No fetching failed</h1>

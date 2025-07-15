@@ -1,23 +1,19 @@
-import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Search from "./pages/Search";
-import Requests from "./pages/Requests";
-import Profile from "./pages/Profile";
+import { Outlet } from "react-router-dom";
 import BottomNav from "./components/BottomNav";
 import Header from "./components/Header";
 
 function App() {
 	return (
-		<div className="min-h-screen pb-16 md:pb-0">
+		<div className="min-h-screen pb-16 md:pb-0 bg-[#0f172a] text-white">
 			<Header />
-			<Routes>
-				<Route path="/" element={<Home />} />
-				<Route path="/search" element={<Search />} />
-				<Route path="/requests" element={<Requests />} />
-				<Route path="/profile" element={<Profile />} />
-			</Routes>
 
-			<div className="md:hidden">
+			{/* This renders the page based on current route */}
+			<main className="px-4 py-6">
+				<Outlet />
+			</main>
+
+			{/* Bottom navigation for mobile */}
+			<div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
 				<BottomNav />
 			</div>
 		</div>

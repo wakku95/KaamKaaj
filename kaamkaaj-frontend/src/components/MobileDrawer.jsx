@@ -1,7 +1,33 @@
-// src/components/MobileDrawer.jsx
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function MobileDrawer({ open, onClose }) {
+	// const token = localStorage.getItem("token");
+	const { isLoggedIn, logout } = useAuth();
+	// const isLoggedIn = !!token;
+	const navigate = useNavigate();
+
+	const handleLogout = () => {
+		// localStorage.removeItem("token");
+		logout();
+		onClose();
+		navigate("/");
+	};
+
+	const links = isLoggedIn
+		? [
+				{ to: "/", label: "Home" },
+				{ to: "/search", label: "Search" },
+				{ to: "/requests", label: "Requests" },
+				{ to: "/profile", label: "Profile" },
+		  ]
+		: [
+				{ to: "/", label: "Home" },
+				{ to: "/search", label: "Search" },
+				{ to: "/login", label: "Login" },
+				{ to: "/register", label: "Register" },
+		  ];
+
 	return (
 		<>
 			{/* Backdrop */}
@@ -22,12 +48,7 @@ export default function MobileDrawer({ open, onClose }) {
 					Menu
 				</div>
 				<nav className="flex flex-col px-5 pt-3 text-sm">
-					{[
-						{ to: "/", label: "Home" },
-						{ to: "/search", label: "Search" },
-						{ to: "/requests", label: "Requests" },
-						{ to: "/profile", label: "Profile" },
-					].map(({ to, label }) => (
+					{links.map(({ to, label }) => (
 						<NavLink
 							key={to}
 							to={to}
@@ -41,6 +62,15 @@ export default function MobileDrawer({ open, onClose }) {
 							{label}
 						</NavLink>
 					))}
+
+					{isLoggedIn && (
+						<button
+							onClick={handleLogout}
+							className="py-2 text-left border-b border-slate-700 text-red-400 hover:text-red-500"
+						>
+							Logout
+						</button>
+					)}
 				</nav>
 			</div>
 		</>

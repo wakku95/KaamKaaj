@@ -8,6 +8,10 @@ export const sendOtpByEmail = async (req, res) => {
 
 	const user = await User.findOne({ email });
 	if (!user) return res.status(404).json({ message: "User not found" });
+	// ✅ Prevent sending OTP if already verified
+	if (user.isEmailVerified) {
+		return res.status(400).json({ message: "Email is already verified." });
+	}
 
 	const otp = Math.floor(100000 + Math.random() * 900000);
 	user.otpCode = otp;
@@ -36,7 +40,7 @@ export const verifyEmailOtp = async (req, res) => {
 };
 
 export const registerUser = async (req, res) => {
-	const { name, email, password, phone, isWorker } = req.body;
+	const { name, email, password, phone, isWorker, location } = req.body;
 
 	const userExists = await User.findOne({ email });
 	if (userExists)
@@ -50,6 +54,7 @@ export const registerUser = async (req, res) => {
 		password: hashedPassword,
 		phone,
 		isWorker,
+		location,
 	});
 
 	if (user) {
@@ -84,7 +89,10 @@ export const loginUser = async (req, res) => {
 		_id: user._id,
 		name: user.name,
 		email: user.email,
+		phone: user.phone,
 		isWorker: user.isWorker,
+		location: user.location,
+		isEmailVerified: user.isEmailVerified,
 		token: generateToken(user._id),
 	});
 };

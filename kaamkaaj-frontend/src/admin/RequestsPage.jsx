@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import AdminCard from "./AdminCard";
 
 export default function RequestsPage() {
 	const [requests, setRequests] = useState([]);
@@ -19,9 +20,7 @@ export default function RequestsPage() {
 			<h1 className="text-2xl font-bold mb-4">All Requests</h1>
 			<div className="bg-slate-800 rounded shadow p-4">
 				{requests.map((u) => (
-					<div key={u._id} className="border-b py-2">
-						{u.name} — {u.email}
-					</div>
+					<AdminCard key={u._id} title={u.name} value={u.email}></AdminCard>
 				))}
 			</div>
 		</div>
