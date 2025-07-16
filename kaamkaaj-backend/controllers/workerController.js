@@ -65,6 +65,7 @@ export const searchWorkersNearby = async (req, res) => {
 	try {
 		const workers = await WorkerProfile.find({
 			skills: skill ? { $in: [skill] } : { $exists: true },
+			isAvailable: true,
 			location: {
 				$nearSphere: {
 					$geometry: {
@@ -80,5 +81,25 @@ export const searchWorkersNearby = async (req, res) => {
 	} catch (err) {
 		console.error(err);
 		res.status(500).json({ message: "Search failed" });
+	}
+};
+
+export const toggleAvailability = async (req, res) => {
+	try {
+		const profile = await WorkerProfile.findOne({ user: req.user._id });
+		if (!profile) {
+			return res.status(404).json({ message: "Worker profile not found" });
+		}
+		profile.isAvailable = !profile.isAvailable;
+		await profile.save();
+		res.json({
+			message: `Worker is now ${
+				profile.isAvailable ? "available" : "unavailable"
+			}`,
+			profile,
+		});
+	} catch (err) {
+		console.error(err);
+		res.status(500).json({ message: "Failed to toggle availability" });
 	}
 };

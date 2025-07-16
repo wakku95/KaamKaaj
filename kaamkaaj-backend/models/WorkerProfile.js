@@ -25,6 +25,7 @@ const workerProfileSchema = new mongoose.Schema(
 			type: Boolean,
 			default: true, // For now, allow access even if credits = 0
 		},
+		isAvailable: { type: Boolean, default: true },
 	},
 	{ timestamps: true }
 );

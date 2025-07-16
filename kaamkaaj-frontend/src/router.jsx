@@ -14,6 +14,7 @@ import Profile from "./pages/Profile";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import MyWorkerProfile from "./pages/WorkerProfile";
 
 // Create routes
 const router = createBrowserRouter([
@@ -37,6 +38,14 @@ const router = createBrowserRouter([
 				element: (
 					<ProtectedRoute>
 						<Profile />
+					</ProtectedRoute>
+				),
+			},
+			{
+				path: "my-worker-profile",
+				element: (
+					<ProtectedRoute>
+						<MyWorkerProfile />
 					</ProtectedRoute>
 				),
 			},

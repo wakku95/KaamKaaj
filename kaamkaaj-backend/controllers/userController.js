@@ -3,6 +3,17 @@ import bcrypt from "bcryptjs";
 import WorkerProfile from "../models/WorkerProfile.js";
 import JobRequest from "../models/JobRequest.js";
 
+export const getProfile = async (req, res) => {
+	try {
+		const user = await User.findById(req.user._id).select("-password");
+		if (!user) return res.status(404).json({ message: "User not found" });
+
+		res.json(user);
+	} catch (err) {
+		res.status(500).json({ message: "Profile fetching failed" });
+	}
+};
+
 export const deleteAccount = async (req, res) => {
 	const userId = req.user._id;
 
@@ -20,7 +31,6 @@ export const deleteAccount = async (req, res) => {
 
 		res.json({ message: "Account and related data deleted successfully" });
 	} catch (err) {
-		console.error(err);
 		res.status(500).json({ message: "Failed to delete account" });
 	}
 };
