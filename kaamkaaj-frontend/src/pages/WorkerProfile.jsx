@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
 
 export default function MyWorkerProfile() {
 	const [profile, setProfile] = useState(null);
@@ -44,9 +45,15 @@ export default function MyWorkerProfile() {
 		return (
 			<div className="text-white p-4">
 				<h2 className="text-2xl mb-2">My Worker Profile</h2>
-				<p>
+				<p className="mb-4">
 					No worker profile found. You can create one from the worker section.
 				</p>
+				<Link
+					to="/create-update-worker-profile"
+					className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition"
+				>
+					Create Worker Profile
+				</Link>
 			</div>
 		);
 
