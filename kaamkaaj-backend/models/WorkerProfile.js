@@ -16,6 +16,8 @@ const workerProfileSchema = new mongoose.Schema(
 			type: { type: String, enum: ["Point"], default: "Point" },
 			coordinates: { type: [Number], default: [0, 0] }, // [lng, lat]
 		},
+		locationName: { type: String, default: "Unknown" },
+
 		// NEW: Credits system (for future monetization)
 		credits: {
 			type: Number,

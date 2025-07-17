@@ -3,10 +3,16 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { FaCheckCircle, FaTimesCircle, FaEdit } from "react-icons/fa";
+import { FiMapPin } from "react-icons/fi";
 
 export default function MyWorkerProfile() {
 	const [profile, setProfile] = useState(null);
 	const [loading, setLoading] = useState(true);
+	const [location, setLocation] = useState({
+		coordinates: null,
+		locationName: "",
+	});
+	const [locationStatus, setLocationStatus] = useState(""); // For showing feedback
 	const { token } = useAuth();
 
 	useEffect(() => {
@@ -18,6 +24,7 @@ export default function MyWorkerProfile() {
 					},
 				});
 				setProfile(res.data);
+				setLocation(res.data.locationName);
 			} catch (err) {
 				alert("Failed to load profile");
 			} finally {
@@ -26,6 +33,72 @@ export default function MyWorkerProfile() {
 		};
 		fetchProfile();
 	}, []);
+
+	const getLocation = async () => {
+		if (!navigator.geolocation) {
+			setLocationStatus("Geolocation not supported.");
+			return;
+		}
+
+		setLocationStatus("Fetching location...");
+
+		navigator.geolocation.getCurrentPosition(
+			async (position) => {
+				const lat = position.coords.latitude;
+				const lon = position.coords.longitude;
+
+				try {
+					const res = await axios.get(
+						`https://us1.locationiq.com/v1/reverse.php?key=pk.3c70466dc51de1ed2704d56f43383f52&lat=${lat}&lon=${lon}&format=json`
+					);
+					const name =
+						res.data.address.suburb ||
+						res.data.address.city ||
+						res.data.address.town ||
+						res.data.display_name ||
+						"Unknown Area";
+					const updatedProfile = {
+						skills: profile.skills,
+						experience: profile.experience,
+						rate: profile.rate,
+						serviceRadius: profile.serviceRadius,
+						location: {
+							type: "Point",
+							coordinates: [lon, lat],
+						},
+						locationName: name,
+					};
+					// const locationData = {
+					// 	location: {
+					// 		type: "Point",
+					// 		coordinates: [lon, lat],
+					// 	},
+					// 	locationName: name,
+					// };
+					// Save to backend
+					await axios.post("/api/workers/profile", updatedProfile, {
+						headers: { Authorization: `Bearer ${token}` },
+					});
+
+					setLocation(name);
+					setLocationStatus("Location set and saved!");
+				} catch (err) {
+					console.error("LocationIQ error or save failed:", err.message);
+					setLocation({
+						coordinates: [lon, lat],
+						locationName: "Unknown",
+					});
+					setLocationStatus(
+						"Saved coordinates, but could not fetch area name."
+					);
+				}
+			},
+			(error) => {
+				console.error("Geolocation error:", error);
+				setLocationStatus("Failed to get location.");
+			}
+		);
+	};
 
 	const toggleAvailability = async () => {
 		try {
@@ -65,8 +138,28 @@ export default function MyWorkerProfile() {
 			<p>Email: {profile.user.email}</p>
 			<p>Skills: {profile.skills.join(", ")}</p>
 			<p>Rate: {profile.rate}</p>
+			<p>Experience: {profile.experience}</p>
 			<p>Status: {profile.isAvailable ? "Available" : "Unavailable"}</p>
-
+			<div className="mb-4">
+				<p className="text-sm mt-1 text-gray-300">
+					{locationStatus || "Your area will help us match you to nearby jobs."}
+				</p>
+				<div className="flex items-center gap-2 mt-1">
+					{profile.locationName && (
+						<p className="text-sm mt-1 text-white">
+							📍 Location: {profile.locationName}
+						</p>
+					)}
+					<button
+						type="button"
+						onClick={getLocation}
+						title="Fetch My Location"
+						className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-md hover:scale-105 transition duration-200"
+					>
+						<FiMapPin size={18} />
+					</button>
+				</div>
+			</div>
 			<button
 				onClick={toggleAvailability}
 				className={`flex items-center mt-2 gap-2 px-4 py-2 rounded text-white transition duration-300 ${

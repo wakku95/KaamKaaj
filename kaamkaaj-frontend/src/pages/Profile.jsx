@@ -1,9 +1,42 @@
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
 
 export default function Profile() {
-	const { user, logout, loading } = useAuth();
+	const { user, logout, loading, setUser, token } = useAuth();
+	const [updatingRole, setUpdatingRole] = useState(false);
 	const navigate = useNavigate();
+
+	const becomeWorker = async () => {
+		if (!window.confirm("Do you want to become a worker?")) return;
+
+		try {
+			setUpdatingRole(true);
+
+			const res = await fetch("/api/user/edit", {
+				method: "PUT",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ isWorker: true }),
+			});
+
+			const data = await res.json();
+
+			if (res.ok) {
+				setUser(data.user); // update AuthContext
+				alert("You are now a worker!");
+			} else {
+				alert(data.message || "Failed to switch role");
+			}
+		} catch (err) {
+			console.error(err);
+			alert("Something went wrong");
+		} finally {
+			setUpdatingRole(false);
+		}
+	};
 
 	if (loading) return <p className="text-center text-white">Loading...</p>;
 
@@ -25,6 +58,15 @@ export default function Profile() {
 					</p>
 					<p>
 						<strong>Role:</strong> {user.isWorker ? "Worker" : "User"}
+						{!user.isWorker && (
+							<button
+								onClick={becomeWorker}
+								disabled={updatingRole}
+								className="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition"
+							>
+								{updatingRole ? "Updating..." : "Become a Worker"}
+							</button>
+						)}
 					</p>
 				</div>
 

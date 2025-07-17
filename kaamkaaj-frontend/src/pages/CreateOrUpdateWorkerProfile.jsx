@@ -106,16 +106,13 @@ export default function CreateOrUpdateWorkerProfile() {
 	const handleChange = (e) => {
 		const { name, value, type } = e.target;
 
-		// Convert to number for specific fields
 		const numericFields = ["rate", "serviceRadius"];
 		if (numericFields.includes(name)) {
 			setFormData((prev) => ({
 				...prev,
 				[name]: Number(value),
 			}));
-		}
-		// Handle multiple selections for skills
-		else if (name === "skills") {
+		} else if (name === "skills") {
 			const selectedOptions = Array.from(e.target.selectedOptions).map(
 				(opt) => opt.value
 			);
@@ -123,9 +120,7 @@ export default function CreateOrUpdateWorkerProfile() {
 				...prev,
 				skills: selectedOptions,
 			}));
-		}
-		// Default: regular text field
-		else {
+		} else {
 			setFormData((prev) => ({
 				...prev,
 				[name]: value,
@@ -146,13 +141,11 @@ export default function CreateOrUpdateWorkerProfile() {
 		e.preventDefault();
 		setLoading(true);
 		try {
-			console.log(formData);
 			await axios.post("/api/workers/profile", formData, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
-
 			alert("Profile saved successfully!");
-			navigate("/profile");
+			navigate("/my-worker-profile");
 		} catch (err) {
 			console.error("Error details:", err.response?.data || err.message);
 			alert("Failed to save profile");

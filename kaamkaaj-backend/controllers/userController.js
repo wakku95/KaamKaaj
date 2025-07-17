@@ -37,7 +37,7 @@ export const deleteAccount = async (req, res) => {
 
 export const updateUserProfile = async (req, res) => {
 	const userId = req.user._id;
-	const { name, phone, password } = req.body;
+	const { name, phone, password, isWorker } = req.body;
 
 	try {
 		const user = await User.findById(userId);
@@ -46,6 +46,13 @@ export const updateUserProfile = async (req, res) => {
 		// ✅ Update fields only if provided
 		if (name) user.name = name;
 		if (phone) user.phone = phone;
+		if (!isWorker) {
+			if (user.isWorker)
+				return res
+					.status(401)
+					.json({ message: "Worker cannot become a user." });
+		}
+		if (isWorker) user.isWorker = isWorker;
 		if (password) {
 			const hashed = await bcrypt.hash(password, 10);
 			user.password = hashed;

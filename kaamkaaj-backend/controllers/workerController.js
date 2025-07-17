@@ -1,7 +1,8 @@
 import WorkerProfile from "../models/WorkerProfile.js";
 
 export const createOrUpdateWorkerProfile = async (req, res) => {
-	const { skills, experience, rate, serviceRadius, location } = req.body;
+	const { skills, experience, rate, serviceRadius, location, locationName } =
+		req.body;
 
 	const skillOptions = [
 		"Electrician",
@@ -44,6 +45,9 @@ export const createOrUpdateWorkerProfile = async (req, res) => {
 		if (!req.user.isEmailVerified) {
 			return res.status(403).json({ message: "Email is not verified" });
 		}
+		if (!req.user.isWorker) {
+			return res.status(403).json({ message: "You have to be a worker first" });
+		}
 
 		// ✅ Validate skills
 		if (
@@ -71,10 +75,11 @@ export const createOrUpdateWorkerProfile = async (req, res) => {
 		let profile = await WorkerProfile.findOne({ user: req.user._id });
 
 		if (profile) {
-			profile.skills = skills;
-			profile.experience = experience;
-			profile.rate = rate;
-			profile.serviceRadius = serviceRadius;
+			if (skills) profile.skills = skills;
+			if (experience) profile.experience = experience;
+			if (rate) profile.rate = rate;
+			if (serviceRadius) profile.serviceRadius = serviceRadius;
+			if (locationName) profile.locationName = locationName;
 			if (location) profile.location = location; // optional
 
 			await profile.save();
@@ -87,6 +92,7 @@ export const createOrUpdateWorkerProfile = async (req, res) => {
 			experience,
 			rate,
 			serviceRadius,
+			locationName: locationName || "Unknown",
 			location,
 			credits: 5,
 			canAccessJobs: true,
@@ -94,7 +100,7 @@ export const createOrUpdateWorkerProfile = async (req, res) => {
 
 		res.status(201).json({ message: "Profile created", profile });
 	} catch (err) {
-		console.error(err);
+		console.error(err.message);
 		res.status(500).json({ message: "Failed to create/update profile" });
 	}
 };

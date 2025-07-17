@@ -16,6 +16,7 @@ import RegisterPage from "./pages/RegisterPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import MyWorkerProfile from "./pages/WorkerProfile";
 import CreateOrUpdateWorkerProfile from "./pages/CreateOrUpdateWorkerProfile";
+import EditUserProfile from "./pages/EditUserProfile";
 
 // Create routes
 const router = createBrowserRouter([
@@ -55,6 +56,14 @@ const router = createBrowserRouter([
 				element: (
 					<ProtectedRoute>
 						<CreateOrUpdateWorkerProfile />
+					</ProtectedRoute>
+				),
+			},
+			{
+				path: "edit-profile",
+				element: (
+					<ProtectedRoute>
+						<EditUserProfile />
 					</ProtectedRoute>
 				),
 			},
