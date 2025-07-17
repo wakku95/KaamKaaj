@@ -4,14 +4,58 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const skillOptions = [
-	"Electrician",
-	"Plumber",
-	"Carpenter",
-	"Painter",
-	"Mechanic",
-	"AC Technician",
-	"Welder",
-	"Cleaner",
+	{ value: "Electrician", label: "Electrician (الیکٹریشن)" },
+	{ value: "Plumber", label: "Plumber (پلمبر)" },
+	{ value: "Carpenter", label: "Carpenter (ترکھان)" },
+	{ value: "Painter", label: "Painter (رنگ ساز)" },
+	{ value: "Mechanic", label: "Mechanic (مکینک)" },
+	{ value: "AC Technician", label: "AC Technician (اے سی ٹیکنیشن)" },
+	{ value: "Welder", label: "Welder (ویلڈر)" },
+	{ value: "Cleaner", label: "Cleaner (صفائی والا)" },
+	{ value: "Mason", label: "Mason / Mistri (مستری)" },
+	{ value: "Tile Fixer", label: "Tile Fixer (ٹائل لگانے والا)" },
+	{ value: "Marble Fixer", label: "Marble Fixer (ماربل لگانے والا)" },
+	{ value: "Steel Fixer", label: "Steel Fixer (سٹیل فکسر)" },
+	{ value: "Construction Labor", label: "Construction Labor (مزدور)" },
+	{
+		value: "Shuttering Carpenter",
+		label: "Shuttering Carpenter (شٹرنگ ترکھان)",
+	},
+	{ value: "Roofing Expert", label: "Roofing Expert (چھت بنانے والا)" },
+	{ value: "Plaster Worker", label: "Plaster Worker (پلستر کرنے والا)" },
+	{
+		value: "Excavator Operator",
+		label: "Excavator Operator (ایکسکیویٹر آپریٹر)",
+	},
+	{ value: "Scaffolder", label: "Scaffolder (سکافولڈ لگانے والا)" },
+	{ value: "Glass Installer", label: "Glass Installer (شیشہ لگانے والا)" },
+	{
+		value: "POP Ceiling Installer",
+		label: "POP Ceiling Installer (پی او پی سیلنگ کاریگر)",
+	},
+	{
+		value: "Solar Panel Installer",
+		label: "Solar Panel Installer (سولر انسٹالر)",
+	},
+	{
+		value: "False Ceiling Technician",
+		label: "False Ceiling Technician (فال سیلنگ کاریگر)",
+	},
+	{ value: "Bricklayer", label: "Bricklayer (اینٹیں لگانے والا)" },
+	{
+		value: "Waterproofing Expert",
+		label: "Waterproofing Expert (واٹر پروفنگ ماہر)",
+	},
+	{ value: "Grill Fabricator", label: "Grill Fabricator (گرِل بنانے والا)" },
+	{ value: "Landscaper", label: "Landscaper (گھاس باغ لگانے والا)" },
+	{ value: "Floor Polisher", label: "Floor Polisher (فرش پالش کرنے والا)" },
+	{
+		value: "Pest Control Technician",
+		label: "Pest Control Technician (کیڑوں کا خاتمہ کرنے والا)",
+	},
+	{ value: "Window Installer", label: "Window Installer (کھڑکی لگانے والا)" },
+	{ value: "Gate Maker", label: "Gate Maker (دروازہ بنانے والا)" },
+	{ value: "Sanitary Worker", label: "Sanitary Worker (سینیٹری ورکر)" },
 ];
 
 const experienceOptions = ["<1 year", "1-2 years", "3-5 years", "5+ years"];
@@ -36,22 +80,57 @@ export default function CreateOrUpdateWorkerProfile() {
 				const res = await axios.get("/api/workers/profile", {
 					headers: { Authorization: `Bearer ${token}` },
 				});
+
+				const profile = res.data;
+
 				setFormData({
-					skills: res.data.skills || [],
-					rate: res.data.rate?.toString() || "",
-					experience: res.data.experience || "",
-					serviceRadius: res.data.serviceRadius?.toString() || "",
+					skills: Array.isArray(profile.skills) ? profile.skills : [],
+					rate: typeof profile.rate === "number" ? profile.rate : "",
+					experience: profile.experience || "",
+					serviceRadius:
+						typeof profile.serviceRadius === "number"
+							? profile.serviceRadius
+							: "",
 				});
+
 				setIsEditing(true);
 			} catch (err) {
+				console.error("Failed to fetch worker profile", err);
 				setIsEditing(false);
 			}
 		};
+
 		fetchProfile();
 	}, []);
 
 	const handleChange = (e) => {
-		setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+		const { name, value, type } = e.target;
+
+		// Convert to number for specific fields
+		const numericFields = ["rate", "serviceRadius"];
+		if (numericFields.includes(name)) {
+			setFormData((prev) => ({
+				...prev,
+				[name]: Number(value),
+			}));
+		}
+		// Handle multiple selections for skills
+		else if (name === "skills") {
+			const selectedOptions = Array.from(e.target.selectedOptions).map(
+				(opt) => opt.value
+			);
+			setFormData((prev) => ({
+				...prev,
+				skills: selectedOptions,
+			}));
+		}
+		// Default: regular text field
+		else {
+			setFormData((prev) => ({
+				...prev,
+				[name]: value,
+			}));
+		}
 	};
 
 	const handleCheckbox = (skill) => {
@@ -67,12 +146,15 @@ export default function CreateOrUpdateWorkerProfile() {
 		e.preventDefault();
 		setLoading(true);
 		try {
+			console.log(formData);
 			await axios.post("/api/workers/profile", formData, {
 				headers: { Authorization: `Bearer ${token}` },
 			});
+
 			alert("Profile saved successfully!");
 			navigate("/profile");
 		} catch (err) {
+			console.error("Error details:", err.response?.data || err.message);
 			alert("Failed to save profile");
 		} finally {
 			setLoading(false);
@@ -92,14 +174,14 @@ export default function CreateOrUpdateWorkerProfile() {
 				<label className="block mb-2 text-sm">Skills</label>
 				<div className="flex flex-wrap gap-2 mb-4">
 					{skillOptions.map((skill) => (
-						<label key={skill} className="text-sm">
+						<label key={skill.value} className="text-sm">
 							<input
 								type="checkbox"
-								checked={formData.skills.includes(skill)}
-								onChange={() => handleCheckbox(skill)}
+								checked={formData.skills.includes(skill.value)}
+								onChange={() => handleCheckbox(skill.value)}
 								className="mr-1"
 							/>
-							{skill}
+							{skill.label}
 						</label>
 					))}
 				</div>

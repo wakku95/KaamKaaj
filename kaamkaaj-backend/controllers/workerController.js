@@ -3,34 +3,93 @@ import WorkerProfile from "../models/WorkerProfile.js";
 export const createOrUpdateWorkerProfile = async (req, res) => {
 	const { skills, experience, rate, serviceRadius, location } = req.body;
 
+	const skillOptions = [
+		"Electrician",
+		"Plumber",
+		"Carpenter",
+		"Painter",
+		"Mechanic",
+		"AC Technician",
+		"Welder",
+		"Cleaner",
+		"Mason",
+		"Tile Fixer",
+		"Marble Fixer",
+		"Steel Fixer",
+		"Construction Labor",
+		"Shuttering Carpenter",
+		"Roofing Expert",
+		"Plaster Worker",
+		"Excavator Operator",
+		"Scaffolder",
+		"Glass Installer",
+		"POP Ceiling Installer",
+		"Solar Panel Installer",
+		"False Ceiling Technician",
+		"Bricklayer",
+		"Waterproofing Expert",
+		"Grill Fabricator",
+		"Landscaper",
+		"Floor Polisher",
+		"Pest Control Technician",
+		"Window Installer",
+		"Gate Maker",
+		"Sanitary Worker",
+	];
+
+	const experienceOptions = ["<1 year", "1-2 years", "3-5 years", "5+ years"];
+	const rateOptions = [300, 500, 800, 1000];
+	const radiusOptions = [5, 10, 20, 100, 200];
 	try {
-		const existing = await WorkerProfile.findOne({ user: req.user._id });
 		if (!req.user.isEmailVerified) {
-			return res.json({ message: "Email is not verified" });
-		}
-		if (existing) {
-			// Update existing profile
-			existing.skills = skills;
-			existing.experience = experience;
-			existing.rate = rate;
-			existing.serviceRadius = serviceRadius;
-			existing.location = location;
-
-			// Don't touch credits or access control here
-			await existing.save();
-			return res.json({ message: "Profile updated", profile: existing });
+			return res.status(403).json({ message: "Email is not verified" });
 		}
 
-		// Create new profile with default credits
-		const profile = await WorkerProfile.create({
+		// ✅ Validate skills
+		if (
+			!Array.isArray(skills) ||
+			skills.some((skill) => !skillOptions.includes(skill))
+		) {
+			return res.status(400).json({ message: "Invalid skills selected" });
+		}
+
+		// ✅ Validate experience
+		if (!experienceOptions.includes(experience)) {
+			return res.status(400).json({ message: "Invalid experience value" });
+		}
+
+		// ✅ Validate rate
+		if (!rateOptions.includes(rate)) {
+			return res.status(400).json({ message: "Invalid rate selected" });
+		}
+
+		// ✅ Validate service radius
+		if (!radiusOptions.includes(serviceRadius)) {
+			return res.status(400).json({ message: "Invalid service radius" });
+		}
+
+		let profile = await WorkerProfile.findOne({ user: req.user._id });
+
+		if (profile) {
+			profile.skills = skills;
+			profile.experience = experience;
+			profile.rate = rate;
+			profile.serviceRadius = serviceRadius;
+			if (location) profile.location = location; // optional
+
+			await profile.save();
+			return res.json({ message: "Profile updated", profile });
+		}
+
+		profile = await WorkerProfile.create({
 			user: req.user._id,
 			skills,
 			experience,
 			rate,
 			serviceRadius,
 			location,
-			credits: 5, // 🎁 5 free credits
-			canAccessJobs: true, // ✅ allow even when credits = 0 (for now)
+			credits: 5,
+			canAccessJobs: true,
 		});
 
 		res.status(201).json({ message: "Profile created", profile });

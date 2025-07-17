@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
+import { FaCheckCircle, FaTimesCircle, FaEdit } from "react-icons/fa";
 
 export default function MyWorkerProfile() {
 	const [profile, setProfile] = useState(null);
@@ -68,10 +69,32 @@ export default function MyWorkerProfile() {
 
 			<button
 				onClick={toggleAvailability}
-				className="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
+				className={`flex items-center mt-2 gap-2 px-4 py-2 rounded text-white transition duration-300 ${
+					profile.isAvailable
+						? "bg-green-600 hover:bg-green-700"
+						: "bg-gray-600 hover:bg-gray-700"
+				}`}
 			>
-				{profile.isAvailable ? "Set as Unavailable" : "Set as Available"}
+				{profile.isAvailable ? (
+					<>
+						<FaTimesCircle />
+						Set as Unavailable
+					</>
+				) : (
+					<>
+						<FaCheckCircle />
+						Set as Available
+					</>
+				)}
 			</button>
+
+			<Link
+				to="/create-update-worker-profile"
+				className="flex items-center mt-2 max-w-40 gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white transition duration-300"
+			>
+				<FaEdit />
+				Edit Profile
+			</Link>
 		</div>
 	);
 }
