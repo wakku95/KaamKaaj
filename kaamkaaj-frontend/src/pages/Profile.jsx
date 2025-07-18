@@ -1,11 +1,41 @@
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Profile() {
-	const { user, logout, loading, setUser, token } = useAuth();
+	const { user, logout, token, loading } = useAuth();
 	const [updatingRole, setUpdatingRole] = useState(false);
 	const navigate = useNavigate();
+	// const [userData, setUserData] = useState(user);
+	// const [loading, setLoading] = useState(true);
+
+	useEffect(() => {
+		// setUserData((prev) => {
+		// 	console.log(prev);
+		// 	return user;
+		// });
+		// setLoading(false);
+		// const fetchProfile = async () => {
+		// 	try {
+		// 		const res = await fetch("/api/user/get-profile", {
+		// 			headers: {
+		// 				Authorization: `Bearer ${token}`,
+		// 			},
+		// 		});
+		// 		const data = await res.json();
+		// 		setUserData({
+		// 			name: data.name,
+		// 			phone: data.phone,
+		// 			isWorker: data.isWorker,
+		// 		});
+		// 		setLoadingP(false);
+		//    }
+		//  catch (err) {
+		// 	alert("Failed to fetch user data");
+		// }
+		// };
+		// fetchProfile();
+	}, []);
 
 	const becomeWorker = async () => {
 		if (!window.confirm("Do you want to become a worker?")) return;
@@ -26,6 +56,7 @@ export default function Profile() {
 
 			if (res.ok) {
 				setUser(data.user); // update AuthContext
+				setUserData(data.user);
 				alert("You are now a worker!");
 			} else {
 				alert(data.message || "Failed to switch role");
@@ -97,7 +128,7 @@ export default function Profile() {
 									await fetch("/api/user/delete", {
 										method: "DELETE",
 										headers: {
-											Authorization: `Bearer ${localStorage.getItem("token")}`,
+											Authorization: `Bearer ${token}`,
 										},
 									});
 									logout();

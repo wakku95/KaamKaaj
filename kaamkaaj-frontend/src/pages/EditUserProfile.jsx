@@ -4,12 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function EditUserProfile() {
-	const { token } = useAuth();
+	const { token, user, setUser } = useAuth();
 	const navigate = useNavigate();
 	const [userData, setUserData] = useState({
 		name: "",
 		phone: "",
 		password: "",
+		isWorker: null,
 	});
 	const [loading, setLoading] = useState(true);
 
@@ -22,7 +23,19 @@ export default function EditUserProfile() {
 					},
 				});
 				const data = await res.json();
-				setUserData({ name: data.name, phone: data.phone, password: "" });
+				setUserData({
+					name: data.name,
+					email: data.email,
+					phone: data.phone,
+					password: "",
+					isWorker: data.isWorker,
+				});
+				// setUser({
+				// 	name: data.name,
+				// 	email: user.email,
+				// 	phone: data.phone,
+				// 	isWorker: data.isWorker,
+				// });
 				setLoading(false);
 			} catch (err) {
 				alert("Failed to fetch user data");
@@ -47,6 +60,7 @@ export default function EditUserProfile() {
 				body: JSON.stringify(userData),
 			});
 			if (!res.ok) throw new Error("Failed to update profile");
+			setUser(userData);
 			alert("Profile updated successfully");
 			navigate("/profile");
 		} catch (err) {

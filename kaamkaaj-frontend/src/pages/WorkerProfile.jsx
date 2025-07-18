@@ -62,6 +62,12 @@ export default function MyWorkerProfile() {
 						experience: profile.experience,
 						rate: profile.rate,
 						serviceRadius: profile.serviceRadius,
+						user: {
+							email: profile.user.email,
+							name: profile.user.name,
+							_id: profile.user._id,
+						},
+						isAvailable: profile.isAvailable,
 						location: {
 							type: "Point",
 							coordinates: [lon, lat],
@@ -82,6 +88,7 @@ export default function MyWorkerProfile() {
 
 					setLocation(name);
 					setLocationStatus("Location set and saved!");
+					setProfile(updatedProfile);
 				} catch (err) {
 					console.error("LocationIQ error or save failed:", err.message);
 					setLocation({
